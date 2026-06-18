@@ -1,4 +1,4 @@
-# log-output
+# ping-pong
 
 ## Startup
 
