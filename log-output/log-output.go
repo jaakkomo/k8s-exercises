@@ -16,10 +16,12 @@ func getStatus(msg string) string {
 	return fmt.Sprintf("%s: %s\n", currentTime, msg)
 }
 
-func createIndexHandler (file string) http.HandlerFunc {
+func createIndexHandler (logFile, pongFile string) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		data, _ := os.ReadFile(file)
-		fmt.Fprint(w, string(data))
+		logData, _ := os.ReadFile(logFile)
+		pongData, _ := os.ReadFile(pongFile)
+		fmt.Fprint(w, string(logData))
+		fmt.Fprintf(w, "Ping / Pongs: %s", pongData)
 	}
 }
 
@@ -52,15 +54,18 @@ func main() {
 
 	port := readEnv("PORT", "8080")
 	role := readEnv("ROLE", "writer")
-	file := readEnv("FILE", "/dev/null")
+	logFile := readEnv("LOG_FILE", "/dev/null")
+	pongFile := readEnv("PONG_FILE", "/dev/null")
 
 	switch role {
 	case "writer":
-		fmt.Println("Started writing to", file)
-		doLog(file, msg)
+		fmt.Println("Started writing to", logFile)
+		doLog(logFile, msg)
 	case "reader":
-		fmt.Println("Started reading from", file)
-		http.HandleFunc("/", createIndexHandler(file))
+		fmt.Println("Started reading")
+		fmt.Println("Log file:", logFile)
+		fmt.Println("Ping pong file:", pongFile)
+		http.HandleFunc("/", createIndexHandler(logFile, pongFile))
 		fmt.Println("Server started in port", port)
 		http.ListenAndServe(":" + port, nil)
 	default:
