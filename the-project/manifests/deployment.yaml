@@ -18,7 +18,7 @@ spec:
             claimName: todo-app
       containers:
         - name: todo-app
-          image: fallmx/todo-app:1.12
+          image: fallmx/todo-app:1.13
           volumeMounts:
           - name: todo-app
             mountPath: /mnt/todo-app

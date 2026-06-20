@@ -23,6 +23,10 @@ var templatesFS embed.FS
 //go:embed static/*
 var staticFS embed.FS
 
+type Todo struct {
+    Text string
+}
+
 func readEnv(env, fallback string) string {
 	if value, ok := os.LookupEnv(env); ok {
 		return value
@@ -32,7 +36,14 @@ func readEnv(env, fallback string) string {
 }
 
 func indexHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "index.html", nil)
+	todos := []Todo{
+		{"Learn Kubernetes"},
+		{"Learn Go"},
+		{"Learn parallel computing"},
+	}
+	c.HTML(http.StatusOK, "index.html", gin.H{
+		"todos": todos,
+	})
 }
 
 func downloadNewPicture(picture, pictureApi string) {

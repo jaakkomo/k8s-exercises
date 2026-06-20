@@ -6,5 +6,19 @@
   <body>
     <h1>todo-app</h1>
     <img src="/picture" />
+    <h2>Todos</h2>
+    <fieldset style="margin: 0">
+      <legend>Add todo</legend>
+      <form class="add-todo-form" method="post" action="/submit">
+        <textarea name="text" placeholder="Enter a new todo (max 140 characters)" maxlength="140" required></textarea>
+        <button type="submit">Send</button>
+      </form>
+    </fieldset>
+    <br>
+    <div class="todo-list">
+      {{ range .todos }}
+      <div class="todo">{{ .Text }}</div>
+      {{ end }}
+    </div>
   </body>
 </html>

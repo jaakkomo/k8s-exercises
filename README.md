@@ -14,3 +14,4 @@
 - [1.10.](https://github.com/jaakkomo/k8s-exercises/tree/1.10/log-output)
 - [1.11.](https://github.com/jaakkomo/k8s-exercises/tree/1.11)
 - [1.12.](https://github.com/jaakkomo/k8s-exercises/tree/1.12/the-project)
+- [1.13.](https://github.com/jaakkomo/k8s-exercises/tree/1.13/the-project)

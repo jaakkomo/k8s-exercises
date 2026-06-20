@@ -1,5 +1,27 @@
 body {
-     width: 600px;
-     margin-left: auto;
-     margin-right: auto;
+    width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.add-todo-form {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.add-todo-form textarea {
+    min-width: 20rem;
+}
+
+.todo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.todo {
+    background-color: lightgray;
+    border: 2px groove black;
+    padding: 0.5rem;
 }
