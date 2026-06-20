@@ -3,7 +3,7 @@
 ## Startup
 
 ``` shell
-go run .
+PORT=<port> go run .
 ```
 
 ## Deployment
