@@ -14,4 +14,10 @@ spec:
     spec:
       containers:
         - name: todo-app
-          image: fallmx/todo-app:1.2
+          image: fallmx/todo-app:1.5
+          env:
+          - name: PORT
+            value: "8081"
+          - name: GIN_MODE
+            value: release
+

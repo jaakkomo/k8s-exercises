@@ -3,7 +3,7 @@
 ## Startup
 
 ``` shell
-PORT=<port> go run .
+PORT=<port> GIN_MODE=<"release"/"debug"> go run .
 ```
 
 ## Deployment
