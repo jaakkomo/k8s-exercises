@@ -12,12 +12,23 @@ spec:
       labels:
         app: todo-app
     spec:
+      volumes:
+        - name: todo-app
+          persistentVolumeClaim:
+            claimName: todo-app
       containers:
         - name: todo-app
-          image: fallmx/todo-app:1.5
+          image: fallmx/todo-app:1.12
+          volumeMounts:
+          - name: todo-app
+            mountPath: /mnt/todo-app
           env:
           - name: PORT
             value: "8081"
+          - name: PICTURE
+            value: "/mnt/todo-app/picture.jpg"
+          - name: PICTURE_API
+            value: "https://picsum.photos/600"
           - name: GIN_MODE
             value: release
 
