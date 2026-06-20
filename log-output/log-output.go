@@ -16,29 +16,54 @@ func getStatus(msg string) string {
 	return fmt.Sprintf("%s: %s\n", currentTime, msg)
 }
 
-func createIndexHandler (msg string) http.HandlerFunc {
+func createIndexHandler (file string) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		fmt.Fprint(w, getStatus(msg))
+		data, _ := os.ReadFile(file)
+		fmt.Fprint(w, string(data))
 	}
 }
 
-func doLog(msg string) {
+func overwrite(file, content string) {
+	tmp := file + ".tmp"
+	err := os.WriteFile(tmp, []byte(content), 0644)
+	if err != nil {
+		panic(err)
+	}
+	os.Rename(tmp, file)
+}
+
+func doLog(file, msg string) {
 	for {
-		fmt.Print(getStatus(msg))
+		overwrite(file, getStatus(msg))
 		time.Sleep(logInterval)
+	}
+}
+
+func readEnv(env, fallback string) string {
+	if value, ok := os.LookupEnv(env); ok {
+		return value
+	} else {
+		return fallback
 	}
 }
 
 func main() {
 	msg := uuid.New().String()
 
-	port := "8080"
-	if value, ok := os.LookupEnv("PORT"); ok {
-		port = value
-	}
-	http.HandleFunc("/", createIndexHandler(msg))
+	port := readEnv("PORT", "8080")
+	role := readEnv("ROLE", "writer")
+	file := readEnv("FILE", "/dev/null")
 
-	go doLog(msg)
-	fmt.Println("Server started in port", port)
-	http.ListenAndServe(":" + port, nil)
+	switch role {
+	case "writer":
+		fmt.Println("Started writing to", file)
+		doLog(file, msg)
+	case "reader":
+		fmt.Println("Started reading from", file)
+		http.HandleFunc("/", createIndexHandler(file))
+		fmt.Println("Server started in port", port)
+		http.ListenAndServe(":" + port, nil)
+	default:
+		fmt.Printf("Invalid env var ROLE=%s\n", role)
+	}
 }

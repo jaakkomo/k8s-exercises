@@ -2,8 +2,10 @@
 
 ## Startup
 
+The program can be started in `writer` or `reader` mode. Writer mode writes to `FILE` while reader mode reads from `FILE` and serves it at `PORT`.
+
 ``` shell
-PORT=<port> go run .
+ROLE=<"writer"/"reader"> FILE=<file> PORT=<port> go run .
 ```
 
 ## Deployment
