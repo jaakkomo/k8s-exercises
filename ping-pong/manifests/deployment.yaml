@@ -12,18 +12,9 @@ spec:
       labels:
         app: ping-pong
     spec:
-      volumes:
-        - name: log-and-pingpong
-          persistentVolumeClaim:
-            claimName: log-and-pingpong
       containers:
         - name: ping-pong
-          image: fallmx/ping-pong:1.11
-          volumeMounts:
-          - name: log-and-pingpong
-            mountPath: /mnt/log-and-pingpong
+          image: fallmx/ping-pong:2.1
           env:
           - name: PORT
             value: "8083"
-          - name: FILE
-            value: /mnt/log-and-pingpong/pong

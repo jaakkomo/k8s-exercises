@@ -15,12 +15,9 @@ spec:
       volumes:
         - name: log-output-share
           emptyDir: {}
-        - name: log-and-pingpong
-          persistentVolumeClaim:
-            claimName: log-and-pingpong
       containers:
         - name: log-output-writer
-          image: fallmx/log-output:1.11
+          image: fallmx/log-output:2.1
           volumeMounts:
           - name: log-output-share
             mountPath: /mnt/log-output-share
@@ -30,18 +27,16 @@ spec:
           - name: LOG_FILE
             value: /mnt/log-output-share/log
         - name: log-output-reader
-          image: fallmx/log-output:1.11
+          image: fallmx/log-output:2.1
           volumeMounts:
           - name: log-output-share
             mountPath: /mnt/log-output-share
-          - name: log-and-pingpong
-            mountPath: /mnt/log-and-pingpong
           env:
           - name: ROLE
             value: reader
           - name: LOG_FILE
             value: /mnt/log-output-share/log
-          - name: PONG_FILE
-            value: /mnt/log-and-pingpong/pong
+          - name: PINGS_API
+            value: http://ping-pong:8083/pings
           - name: PORT
             value: "8082"

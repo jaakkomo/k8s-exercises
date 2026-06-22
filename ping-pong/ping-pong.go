@@ -9,22 +9,14 @@ import (
 
 var counter atomic.Uint64
 
-func overwrite(file, content string) {
-	tmp := file + ".tmp"
-	err := os.WriteFile(tmp, []byte(content), 0644)
-	if err != nil {
-		panic(err)
-	}
-	os.Rename(tmp, file)
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+	newCounter := counter.Add(1)
+	oldCounter := newCounter - 1
+	fmt.Fprintf(w, "pong %d\n", oldCounter)
 }
 
-func createIndexHandler(file string) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		newCounter := counter.Add(1)
-		oldCounter := newCounter - 1
-		fmt.Fprintf(w, "pong %d\n", oldCounter)
-		overwrite(file, fmt.Sprintf("%d\n",newCounter))
-	}
+func pingsHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "%d", counter.Load())
 }
 
 func readEnv(env, fallback string) string {
@@ -37,10 +29,9 @@ func readEnv(env, fallback string) string {
 
 func main() {
 	port := readEnv("PORT", "8080")
-	file := readEnv("FILE", "/dev/null")
 
-	overwrite(file, "0\n")
-	http.HandleFunc("/", createIndexHandler(file))
+	http.HandleFunc("/", indexHandler)
+	http.HandleFunc("/pings", pingsHandler)
 	fmt.Println("Server started in port", port)
 	http.ListenAndServe(":" + port, nil)
 }
