@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"embed"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"html/template"
@@ -23,27 +25,12 @@ var templatesFS embed.FS
 //go:embed static/*
 var staticFS embed.FS
 
-type Todo struct {
-    Text string
-}
-
 func readEnv(env, fallback string) string {
 	if value, ok := os.LookupEnv(env); ok {
 		return value
 	} else {
 		return fallback
 	}
-}
-
-func indexHandler(c *gin.Context) {
-	todos := []Todo{
-		{"Learn Kubernetes"},
-		{"Learn Go"},
-		{"Learn parallel computing"},
-	}
-	c.HTML(http.StatusOK, "index.html", gin.H{
-		"todos": todos,
-	})
 }
 
 func downloadNewPicture(picture, pictureApi string) {
@@ -81,6 +68,81 @@ func downloadNewPicture(picture, pictureApi string) {
 	}
 }
 
+type Todo struct {
+    Text string
+}
+
+type TodoClient struct {
+	BaseURL string
+	Client *http.Client
+}
+
+func (tc *TodoClient) CreateTodo(todo Todo) error {
+	body, err := json.Marshal(todo)
+	if err != nil {
+		return err
+	}
+
+	res, err := tc.Client.Post(
+		tc.BaseURL,
+		"application/json",
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode >= 300 {
+		return fmt.Errorf("create todo failed: %s", res.Status)
+	}
+
+	return nil
+}
+
+func (tc *TodoClient) FetchTodos() ([]Todo, error) {
+	res, err := tc.Client.Get(tc.BaseURL)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	var todos []Todo
+	err = json.NewDecoder(res.Body).Decode(&todos)
+	return todos, err
+}
+
+func createIndexHandler(tc *TodoClient) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		todos, err := tc.FetchTodos()
+		if err != nil {
+			slog.Error("fetching todos failed",
+				"error", err,
+			)
+			todos = nil
+		}
+
+		c.HTML(http.StatusOK, "index.html", gin.H{
+			"todos": todos,
+		})
+	}
+}
+
+func createTodoHandler(tc *TodoClient) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		err := tc.CreateTodo(Todo{
+			Text: c.PostForm("text"),
+		})
+
+		if err != nil {
+			c.Status(http.StatusBadGateway)
+			return
+		}
+
+		c.Redirect(http.StatusSeeOther, "/")
+	}
+}
+
 func createPictureHandler(picture, pictureApi string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		fileInfo, err := os.Stat(picture)
@@ -112,8 +174,15 @@ func main() {
 	port := readEnv("PORT", "8080")
 	picture := readEnv("PICTURE", "/dev/null")
 	pictureApi := readEnv("PICTURE_API", "localhost")
+	todosApi := readEnv("TODOS_API", "localhost")
 
-	r.GET("/", indexHandler)
+	tc := &TodoClient{
+		BaseURL: todosApi,
+		Client: &http.Client{},
+	}
+
+	r.GET("/", createIndexHandler(tc))
+	r.POST("/todos", createTodoHandler(tc))
 	r.GET("/picture", createPictureHandler(picture, pictureApi))
 
 	fmt.Println("Server started in port", port)
