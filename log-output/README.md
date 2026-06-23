@@ -11,6 +11,7 @@ ROLE=<"writer"/"reader"> LOG_FILE=<file> PINGS_API=<link> PORT=<port> go run .
 ## Deployment
 
 ``` shell
-kubectl apply -f manifests
+kubectl apply -f ../shared/ns-exercises.yaml
 kubectl apply -f ../shared
+kubectl apply -f manifests
 ```

@@ -20,3 +20,4 @@
 
 - [2.1.](https://github.com/jaakkomo/k8s-exercises/tree/2.1)
 - [2.2.](https://github.com/jaakkomo/k8s-exercises/tree/2.2/the-project)
+- [2.3.](https://github.com/jaakkomo/k8s-exercises/tree/2.3)
