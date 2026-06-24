@@ -16,9 +16,15 @@ spec:
       volumes:
         - name: log-output-share
           emptyDir: {}
+        - name: log-output-config
+          configMap:
+            name: log-output-config
+            items:
+            - key: "information.txt"
+              path: "information.txt"
       containers:
         - name: log-output-writer
-          image: fallmx/log-output:2.1
+          image: fallmx/log-output:2.5
           volumeMounts:
           - name: log-output-share
             mountPath: /mnt/log-output-share
@@ -28,15 +34,24 @@ spec:
           - name: LOG_FILE
             value: /mnt/log-output-share/log
         - name: log-output-reader
-          image: fallmx/log-output:2.1
+          image: fallmx/log-output:2.5
           volumeMounts:
           - name: log-output-share
             mountPath: /mnt/log-output-share
+          - name: log-output-config
+            mountPath: /mnt/log-output-config
           env:
           - name: ROLE
             value: reader
           - name: LOG_FILE
             value: /mnt/log-output-share/log
+          - name: FILE
+            value: /mnt/log-output-config/information.txt
+          - name: MESSAGE
+            valueFrom:
+              configMapKeyRef:
+                name: log-output-config
+                key: message
           - name: PINGS_API
             value: http://ping-pong:8083/pings
           - name: PORT

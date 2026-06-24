@@ -17,8 +17,9 @@ func getStatus(msg string) string {
 	return fmt.Sprintf("%s: %s\n", currentTime, msg)
 }
 
-func createIndexHandler (logFile, pingsApi string) http.HandlerFunc {
+func createIndexHandler (logFile, pingsApi, file, message string) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
+		fileData, _ := os.ReadFile(file)
 		logData, _ := os.ReadFile(logFile)
 		res, err := http.Get(pingsApi)
 		if err != nil {
@@ -27,6 +28,8 @@ func createIndexHandler (logFile, pingsApi string) http.HandlerFunc {
 		}
 		defer res.Body.Close()
 
+		fmt.Fprintf(w, "file content: %s", string(fileData))
+		fmt.Fprintf(w, "env variable: MESSAGE=%s\n", message)
 		fmt.Fprint(w, string(logData))
 		fmt.Fprint(w, "Ping / Pongs: ")
 		io.Copy(w, res.Body)
@@ -64,6 +67,8 @@ func main() {
 	role := readEnv("ROLE", "writer")
 	logFile := readEnv("LOG_FILE", "/dev/null")
 	pingsApi := readEnv("PINGS_API", "localhost")
+	file := readEnv("FILE", "/dev/null")
+	message := readEnv("MESSAGE", "/dev/null")
 
 	switch role {
 	case "writer":
@@ -72,8 +77,10 @@ func main() {
 	case "reader":
 		fmt.Println("Started reading")
 		fmt.Println("Log file:", logFile)
+		fmt.Println("File:", file)
+		fmt.Println("Message:", message)
 		fmt.Println("Pings API:", pingsApi)
-		http.HandleFunc("/", createIndexHandler(logFile, pingsApi))
+		http.HandleFunc("/", createIndexHandler(logFile, pingsApi, file, message))
 		fmt.Println("Server started in port", port)
 		http.ListenAndServe(":" + port, nil)
 	default:
