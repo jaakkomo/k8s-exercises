@@ -19,7 +19,7 @@ spec:
             claimName: todo-app
       containers:
         - name: todo-app
-          image: fallmx/todo-app:2.2
+          image: fallmx/todo-app:2.6
           volumeMounts:
           - name: todo-app
             mountPath: /mnt/todo-app
@@ -30,6 +30,8 @@ spec:
             value: "/mnt/todo-app/picture.jpg"
           - name: PICTURE_API
             value: "https://picsum.photos/600"
+          - name: CACHE_INTERVAL
+            value: 10m
           - name: TODOS_API
             value: "http://todo-backend:8084/todos"
           - name: GIN_MODE

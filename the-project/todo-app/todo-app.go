@@ -17,8 +17,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const cacheInterval = 10 * time.Minute
-
 //go:embed templates/*
 var templatesFS embed.FS
 
@@ -143,7 +141,7 @@ func createTodoHandler(tc *TodoClient) gin.HandlerFunc {
 	}
 }
 
-func createPictureHandler(picture, pictureApi string) gin.HandlerFunc {
+func createPictureHandler(picture, pictureApi string, cacheInterval time.Duration) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		fileInfo, err := os.Stat(picture)
 
@@ -175,6 +173,14 @@ func main() {
 	picture := readEnv("PICTURE", "/dev/null")
 	pictureApi := readEnv("PICTURE_API", "localhost")
 	todosApi := readEnv("TODOS_API", "localhost")
+	cacheIntervalString := readEnv("CACHE_INTERVAL", "10m")
+	cacheInterval, err := time.ParseDuration(cacheIntervalString)
+	if err != nil {
+		slog.Error("parse cache interval failed",
+			"error", err,
+		)
+		return
+	}
 
 	tc := &TodoClient{
 		BaseURL: todosApi,
@@ -183,7 +189,7 @@ func main() {
 
 	r.GET("/", createIndexHandler(tc))
 	r.POST("/todos", createTodoHandler(tc))
-	r.GET("/picture", createPictureHandler(picture, pictureApi))
+	r.GET("/picture", createPictureHandler(picture, pictureApi, cacheInterval))
 
 	fmt.Println("Server started in port", port)
 	r.Run(":" + port)
