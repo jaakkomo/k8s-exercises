@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  namespace: project
+  name: add-random-wikipedia-todo
+spec:
+  schedule: "0 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: add-random-wikipedia-todo
+            image: curlimages/curl:8.21.0
+            command:
+            - /bin/sh
+            - -c
+            - |
+              set -eu
+
+              location=$(
+                  curl -sI https://en.wikipedia.org/wiki/Special:Random \
+                      | sed -n 's/^Location: /https:/Ip' \
+                      | tr -d '\r'
+              )
+
+              curl -X POST http://todo-backend:8084/todos \
+                  -H 'Content-Type: application/json' \
+                  -d "$(printf '{"Text":"Read %s"}' "$location")"
+          restartPolicy: Never
