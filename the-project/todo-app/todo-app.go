@@ -67,7 +67,8 @@ func downloadNewPicture(picture, pictureApi string) {
 }
 
 type Todo struct {
-    Text string
+	ID int64
+	Text string
 }
 
 type TodoClient struct {

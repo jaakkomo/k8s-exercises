@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: project
+  name: todo-backend-postgres
+spec:
+  serviceName: todo-backend-postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: todo-backend-postgres
+  template:
+    metadata:
+      labels:
+        app: todo-backend-postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:18
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: todo-backend-postgres
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: todo-backend-postgres
+                  key: password
+          volumeMounts:
+            - name: todo-backend-postgres
+              mountPath: /var/lib/postgresql
+  volumeClaimTemplates:
+    - metadata:
+        name: todo-backend-postgres
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 100Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: project
+  name: todo-backend-postgres
+spec:
+  selector:
+    app: todo-backend-postgres
+  ports:
+    - port: 5432
+  clusterIP: None

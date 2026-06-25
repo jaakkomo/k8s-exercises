@@ -15,9 +15,23 @@ spec:
     spec:
       containers:
         - name: todo-backend
-          image: fallmx/todo-backend:2.2
+          image: fallmx/todo-backend:2.8
           env:
           - name: PORT
             value: "8084"
           - name: GIN_MODE
             value: release
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: todo-backend-postgres
+                key: username
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: todo-backend-postgres
+                key: password
+          - name: DB_HOST
+            value: todo-backend-postgres
+          - name: DB_PORT
+            value: "5432"

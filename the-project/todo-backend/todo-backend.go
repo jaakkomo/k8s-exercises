@@ -1,21 +1,75 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 )
 
 type Todo struct {
-    Text string
+	ID int64
+	Text string
 }
 
-var todos = []Todo{
-	{"Learn Kubernetes"},
-	{"Learn Go"},
-	{"Learn parallel computing"},
+type Connection struct {
+	conn *pgx.Conn
+}
+
+func Connect(ctx context.Context, databaseUrl string) (*Connection, error) {
+	conn, err := pgx.Connect(ctx, databaseUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Connection{conn: conn}, nil
+}
+
+func (c *Connection) Close(ctx context.Context) error {
+	return c.conn.Close(ctx)
+}
+
+func (c *Connection) Initialize(ctx context.Context) error {
+	_, err := c.conn.Exec(ctx, `
+CREATE TABLE IF NOT EXISTS todos (
+    id BIGINT GENERATED ALWAYS AS IDENTITY,
+    text VARCHAR(140) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+`,
+	)
+	return err
+}
+
+func (c *Connection) CreateTodo(ctx context.Context, todo Todo) error {
+	_, err := c.conn.Exec(ctx,`
+INSERT INTO todos (text)
+VALUES ($1)
+`,
+		todo.Text,
+	)
+	return err
+}
+
+func (c *Connection) GetTodos(ctx context.Context) ([]Todo, error) {
+	rows, err := c.conn.Query(ctx, `
+SELECT id, text
+FROM todos
+`,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	todos, err := pgx.CollectRows(rows, pgx.RowToStructByName[Todo])
+	if err != nil {
+		return nil, err
+	}
+
+	return todos, nil
 }
 
 func readEnv(env, fallback string) string {
@@ -26,25 +80,39 @@ func readEnv(env, fallback string) string {
 	}
 }
 
-func fetchTodosHandler(c *gin.Context) {
-	c.JSON(http.StatusOK, todos)
+func fetchTodosHandler(conn *Connection) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		todos, err := conn.GetTodos(c.Request.Context())
+		if err != nil {
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		c.JSON(http.StatusOK, todos)
+	}
 }
 
-func createTodoHandler(c *gin.Context) {
-	var todo Todo
 
-	if err := c.BindJSON(&todo); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-		return
+func createTodoHandler(conn *Connection) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var todo Todo
+
+		if err := c.BindJSON(&todo); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		err := conn.CreateTodo(c.Request.Context(), todo)
+		if err != nil {
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
+		fmt.Printf("created: %s", todo.Text)
+
+		c.JSON(http.StatusCreated, todo)
 	}
-
-	fmt.Printf("created: %s", todo.Text)
-
-	todos = append(todos, todo)
-
-	c.JSON(http.StatusCreated, todo)
 }
 
 func main() {
@@ -52,8 +120,24 @@ func main() {
 
 	port := readEnv("PORT", "8080")
 
-	r.GET("/todos", fetchTodosHandler)
-	r.POST("/todos", createTodoHandler)
+	databaseUrl := fmt.Sprintf(
+		"postgres://%s:%s@%s:%s/postgres",
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_PORT"),
+	)
+
+	ctx := context.Background()
+	conn, err := Connect(ctx, databaseUrl)
+	if err != nil {
+		panic(err)
+	}
+	defer conn.conn.Close(ctx)
+	conn.Initialize(ctx)
+
+	r.GET("/todos", fetchTodosHandler(conn))
+	r.POST("/todos", createTodoHandler(conn))
 
 	fmt.Println("Server started in port", port)
 	r.Run(":" + port)
