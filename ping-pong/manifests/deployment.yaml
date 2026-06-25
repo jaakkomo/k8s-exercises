@@ -15,7 +15,21 @@ spec:
     spec:
       containers:
         - name: ping-pong
-          image: fallmx/ping-pong:2.1
+          image: fallmx/ping-pong:2.7
           env:
           - name: PORT
             value: "8083"
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: ping-pong-postgres
+                key: username
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: ping-pong-postgres
+                key: password
+          - name: DB_HOST
+            value: ping-pong-postgres
+          - name: DB_PORT
+            value: "5432"
