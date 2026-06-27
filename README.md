@@ -27,3 +27,4 @@
 - [2.7.](https://github.com/jaakkomo/k8s-exercises/tree/2.7/ping-pong)
 - [2.8.](https://github.com/jaakkomo/k8s-exercises/tree/2.8/the-project)
 - [2.9.](https://github.com/jaakkomo/k8s-exercises/tree/2.9/the-project/todo-backend)
+- [2.10.](https://github.com/jaakkomo/k8s-exercises/tree/2.10)

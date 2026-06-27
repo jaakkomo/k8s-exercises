@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: todo-backend
-          image: fallmx/todo-backend:2.8
+          image: fallmx/todo-backend:2.10
           env:
           - name: PORT
             value: "8084"

@@ -3,16 +3,18 @@ package main
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
+	_ "github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5"
 )
 
 type Todo struct {
-	ID int64
-	Text string
+	ID   int64
+	Text string `binding:"required,max=140"`
 }
 
 type Connection struct {
@@ -45,7 +47,7 @@ CREATE TABLE IF NOT EXISTS todos (
 }
 
 func (c *Connection) CreateTodo(ctx context.Context, todo Todo) error {
-	_, err := c.conn.Exec(ctx,`
+	_, err := c.conn.Exec(ctx, `
 INSERT INTO todos (text)
 VALUES ($1)
 `,
@@ -91,12 +93,15 @@ func fetchTodosHandler(conn *Connection) gin.HandlerFunc {
 	}
 }
 
-
-func createTodoHandler(conn *Connection) gin.HandlerFunc {
+func createTodoHandler(conn *Connection, logger *slog.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var todo Todo
 
-		if err := c.BindJSON(&todo); err != nil {
+		if err := c.ShouldBindJSON(&todo); err != nil {
+			logger.Warn(
+				"validation-error",
+				"error", err.Error(),
+			)
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": err.Error(),
 			})
@@ -109,14 +114,33 @@ func createTodoHandler(conn *Connection) gin.HandlerFunc {
 			return
 		}
 
-		fmt.Printf("created: %s", todo.Text)
+		logger.Info(
+			"created_todo",
+			"text", todo.Text,
+		)
 
 		c.JSON(http.StatusCreated, todo)
 	}
 }
 
+func SlogMiddleware(logger *slog.Logger) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Next()
+
+		logger.Info("request",
+			slog.String("method", c.Request.Method),
+			slog.String("path", c.Request.URL.Path),
+			slog.Int("status", c.Writer.Status()),
+		)
+	}
+}
+
 func main() {
-	r := gin.Default()
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+
+	r := gin.New()
+	r.Use(gin.Recovery())
+	r.Use(SlogMiddleware(logger))
 
 	port := readEnv("PORT", "8080")
 
@@ -137,7 +161,7 @@ func main() {
 	conn.Initialize(ctx)
 
 	r.GET("/todos", fetchTodosHandler(conn))
-	r.POST("/todos", createTodoHandler(conn))
+	r.POST("/todos", createTodoHandler(conn, logger))
 
 	fmt.Println("Server started in port", port)
 	r.Run(":" + port)
