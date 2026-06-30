@@ -4,10 +4,9 @@ metadata:
   namespace: exercises
   name: ping-pong
 spec:
-  type: LoadBalancer
+  type: NodePort
   selector:
     app: ping-pong
   ports:
     - protocol: TCP
-      port: 80
-      targetPort: 8083
+      port: 8083
