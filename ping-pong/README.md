@@ -25,6 +25,5 @@ kubectl create secret generic ping-pong-postgres \
 Deploy app:
 
 ``` shell
-kubectl apply -f ../shared
 kubectl apply -f manifests
 ```

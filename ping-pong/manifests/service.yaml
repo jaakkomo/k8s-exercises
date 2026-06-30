@@ -4,9 +4,10 @@ metadata:
   namespace: exercises
   name: ping-pong
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   selector:
     app: ping-pong
   ports:
     - protocol: TCP
-      port: 8083
+      port: 80
+      targetPort: 8083
