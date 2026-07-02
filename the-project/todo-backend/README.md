@@ -8,24 +8,16 @@ PORT=<port> DB_USER=<username> DB_PASSWORD=<password> DB_HOST=<hostname> DB_PORT
 
 ## Deployment
 
-Create namespace `project`:
+You probably want to deploy the whole stack, see `../README.md`. Here is deployment for `todo-backend` only:
+
+Ensure namespace `project` exists:
 
 ``` shell
-kubectl apply -f ../../shared/ns-project.yaml
+kubectl create namespace project
 ```
 
-Create secret for Postgres database:
+Deploy:
 
 ``` shell
-kubectl create secret generic todo-backend-postgres \
-  --namespace project \
-  --from-literal=username=postgres \
-  --from-literal=password=postgres
-```
-
-Deploy app:
-
-``` shell
-kubectl apply -f ../../shared
-kubectl apply -f manifests
+kubectl apply -k .
 ```

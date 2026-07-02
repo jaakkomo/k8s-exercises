@@ -8,13 +8,16 @@ PORT=<port> PICTURE=<file> PICTURE_API=<link> CACHE_INTERVAL=<duration> TODOS_AP
 
 ## Deployment
 
-Make sure `/tmp/todo-app` exists on `k3d-k3s-default-agent-1`:
+You probably want to deploy the whole stack, see `../README.md`. Here is deployment for `todo-app` only:
+
+Ensure namespace `project` exists:
 
 ``` shell
-docker exec k3d-k3s-default-agent-1 mkdir /tmp/todo-app
+kubectl create namespace project
 ```
 
+Deploy:
+
 ``` shell
-kubectl apply -f ../../shared
-kubectl apply -f manifests
+kubectl apply -k .
 ```
