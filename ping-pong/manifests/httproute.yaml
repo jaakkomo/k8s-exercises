@@ -1,0 +1,17 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  namespace: exercises
+  name: ping-pong
+spec:
+  parentRefs:
+  - name: dwk-cluster-gateway
+    namespace: default
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /pingpong
+    backendRefs:
+    - name: ping-pong
+      port: 8083

@@ -1,0 +1,17 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  namespace: exercises
+  name: log-output
+spec:
+  parentRefs:
+  - name: dwk-cluster-gateway
+    namespace: default
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /log
+    backendRefs:
+    - name: log-output
+      port: 8082
