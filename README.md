@@ -34,3 +34,4 @@
 - [3.1.](https://github.com/jaakkomo/k8s-exercises/tree/3.1/ping-pong)
 - [3.2.](https://github.com/jaakkomo/k8s-exercises/tree/3.2)
 - [3.3.](https://github.com/jaakkomo/k8s-exercises/tree/3.3)
+- [3.4.](https://github.com/jaakkomo/k8s-exercises/tree/3.4/ping-pong)
