@@ -36,3 +36,4 @@
 - [3.3.](https://github.com/jaakkomo/k8s-exercises/tree/3.3)
 - [3.4.](https://github.com/jaakkomo/k8s-exercises/tree/3.4/ping-pong)
 - [3.5.](https://github.com/jaakkomo/k8s-exercises/tree/3.5/the-project)
+- [3.6.](https://github.com/jaakkomo/k8s-exercises/tree/3.6)

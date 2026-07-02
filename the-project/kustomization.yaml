@@ -4,3 +4,8 @@ resources:
 - ../shared/
 - todo-backend/
 - todo-app/
+images:
+  - name: PROJECT/TODO_BACKEND
+    newName: fallmx/todo-backend:2.10
+  - name: PROJECT/TODO_APP
+    newName: fallmx/todo-app:2.8
