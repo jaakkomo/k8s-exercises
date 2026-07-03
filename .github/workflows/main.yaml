@@ -20,6 +20,7 @@ env:
   DEPLOYMENT_TODO_APP: todo-app
   DEPLOYMENT_TODO_BACKEND: todo-backend
   BRANCH: ${{ github.ref_name }}
+  BASE_DOMAIN: ${{ secrets.BASE_DOMAIN }}
 
 jobs:
   build-publish-deploy:
@@ -64,9 +65,19 @@ jobs:
         uses: imranismail/setup-kustomize@v3
       - name: Deploy
         run: |-
+          NAMESPACE=project
+          export HOSTNAME="$BASE_DOMAIN"
+          if [[ "$BRANCH" != "main" ]]; then
+              NAMESPACE="$BRANCH"
+              export HOSTNAME="${NAMESPACE}.${BASE_DOMAIN}"
+          fi
+          kubectl create namespace $NAMESPACE || true
+          kubectl config set-context --current --namespace=$NAMESPACE
+          envsubst < ./patches/hostname.yaml.in > ./patches/hostname.yaml
+          kustomize edit add patch --path ./patches/hostname.yaml
           kustomize edit set image PROJECT/TODO_APP=$IMAGE_TAG_TODO_APP
           kustomize edit set image PROJECT/TODO_BACKEND=$IMAGE_TAG_TODO_BACKEND
           kustomize build . | kubectl apply -f -
-          kubectl rollout status deployment $DEPLOYMENT_TODO_BACKEND -n project
-          kubectl rollout status deployment $DEPLOYMENT_TODO_APP -n project
-          kubectl get services -o wide -n project
+          kubectl rollout status deployment $DEPLOYMENT_TODO_BACKEND
+          kubectl rollout status deployment $DEPLOYMENT_TODO_APP
+          kubectl get services -o wide

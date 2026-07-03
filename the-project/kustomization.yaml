@@ -9,3 +9,4 @@ images:
     newName: fallmx/todo-backend:2.10
   - name: PROJECT/TODO_APP
     newName: fallmx/todo-app:2.8
+
