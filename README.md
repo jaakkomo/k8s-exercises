@@ -40,3 +40,4 @@
 - [3.7.](https://github.com/jaakkomo/k8s-exercises/tree/3.7)
 - [3.8.](https://github.com/jaakkomo/k8s-exercises/tree/3.8/.github/workflows)
 - [3.9.](https://github.com/jaakkomo/k8s-exercises/tree/3.9/the-project)
+- [3.10.](https://github.com/jaakkomo/k8s-exercises/tree/3.10/the-project/backup)

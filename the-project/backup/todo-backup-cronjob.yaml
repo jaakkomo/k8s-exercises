@@ -1,0 +1,48 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: todo-backup
+  namespace: project
+spec:
+  schedule: "0 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: todo-backup
+          restartPolicy: OnFailure
+          containers:
+          - name: todo-backup
+            image: fallmx/postgres-gcloud:18
+            env:
+            - name: PGHOST
+              value: todo-backend-postgres
+            - name: PGPORT
+              value: "5432"
+            - name: PGDATABASE
+              value: postgres
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: todo-backend-postgres
+                  key: username
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: todo-backend-postgres
+                  key: password
+            command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+
+              DATE=$(date +%F)
+              FILE=/tmp/backup-${DATE}.sql.gz
+
+              pg_dump | gzip > "$FILE"
+
+              /root/google-cloud-sdk/bin/gcloud storage cp \
+                --content-type=application/octet-stream \
+                "$FILE" \
+                "gs://dwk-cluster-backup/backup-${DATE}.sql.gz"
