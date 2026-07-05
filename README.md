@@ -42,3 +42,4 @@
 - [3.9.](https://github.com/jaakkomo/k8s-exercises/tree/3.9/the-project)
 - [3.10.](https://github.com/jaakkomo/k8s-exercises/tree/3.10/the-project/backup)
 - [3.11.](https://github.com/jaakkomo/k8s-exercises/tree/3.11/the-project)
+- [3.12.](https://github.com/jaakkomo/k8s-exercises/tree/3.12/the-project)
