@@ -24,6 +24,13 @@ spec:
           volumeMounts:
           - name: todo-app
             mountPath: /mnt/todo-app
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "100Mi"
+            limits:
+              cpu: "500m"
+              memory: "500Mi"
           env:
           - name: PORT
             value: "8081"

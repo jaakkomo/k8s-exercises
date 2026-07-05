@@ -15,6 +15,13 @@ spec:
       containers:
         - name: todo-backend
           image: PROJECT/TODO_BACKEND
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "100Mi"
+            limits:
+              cpu: "500m"
+              memory: "500Mi"
           env:
           - name: PORT
             value: "8084"
