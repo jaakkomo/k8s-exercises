@@ -55,3 +55,4 @@ kubectl -n envoy-gateway-system rollout status deployment/envoy-gateway --timeou
 ## Chapter 5
 
 - [4.1.](https://github.com/jaakkomo/k8s-exercises/tree/4.1)
+- [4.2.](https://github.com/jaakkomo/k8s-exercises/tree/4.2/the-project)

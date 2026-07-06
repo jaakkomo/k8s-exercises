@@ -25,3 +25,7 @@ body {
     border: 2px groove black;
     padding: 0.5rem;
 }
+
+img.unhealthy {
+    filter: grayscale(100%);
+}

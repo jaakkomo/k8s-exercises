@@ -31,6 +31,18 @@ spec:
             limits:
               cpu: "500m"
               memory: "500Mi"
+          readinessProbe:
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            httpGet:
+               path: /
+               port: 8081
+          livenessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            httpGet:
+               path: /
+               port: 8081
           env:
           - name: PORT
             value: "8081"
@@ -41,6 +53,6 @@ spec:
           - name: CACHE_INTERVAL
             value: 10m
           - name: TODOS_API
-            value: "http://todo-backend:8084/todos"
+            value: "http://todo-backend:8084"
           - name: GIN_MODE
             value: release

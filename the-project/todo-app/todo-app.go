@@ -67,13 +67,13 @@ func downloadNewPicture(picture, pictureApi string) {
 }
 
 type Todo struct {
-	ID int64
+	ID   int64
 	Text string
 }
 
 type TodoClient struct {
 	BaseURL string
-	Client *http.Client
+	Client  *http.Client
 }
 
 func (tc *TodoClient) CreateTodo(todo Todo) error {
@@ -83,7 +83,7 @@ func (tc *TodoClient) CreateTodo(todo Todo) error {
 	}
 
 	res, err := tc.Client.Post(
-		tc.BaseURL,
+		tc.BaseURL+"/todos",
 		"application/json",
 		bytes.NewReader(body),
 	)
@@ -100,15 +100,30 @@ func (tc *TodoClient) CreateTodo(todo Todo) error {
 }
 
 func (tc *TodoClient) FetchTodos() ([]Todo, error) {
-	res, err := tc.Client.Get(tc.BaseURL)
+	res, err := tc.Client.Get(tc.BaseURL + "/todos")
 	if err != nil {
 		return nil, err
 	}
 	defer res.Body.Close()
 
+	if res.StatusCode >= 400 {
+		return nil, errors.New("request status not good")
+	}
+
 	var todos []Todo
 	err = json.NewDecoder(res.Body).Decode(&todos)
 	return todos, err
+}
+
+func (tc *TodoClient) Break() {
+	res, err := tc.Client.Post(
+		tc.BaseURL+"/break",
+		"application/json",
+		bytes.NewReader([]byte{}),
+	)
+	if err == nil {
+		res.Body.Close()
+	}
 }
 
 func createIndexHandler(tc *TodoClient) gin.HandlerFunc {
@@ -118,7 +133,8 @@ func createIndexHandler(tc *TodoClient) gin.HandlerFunc {
 			slog.Error("fetching todos failed",
 				"error", err,
 			)
-			todos = nil
+			c.HTML(http.StatusOK, "unhealthy.html", nil)
+			return
 		}
 
 		c.HTML(http.StatusOK, "index.html", gin.H{
@@ -138,6 +154,13 @@ func createTodoHandler(tc *TodoClient) gin.HandlerFunc {
 			return
 		}
 
+		c.Redirect(http.StatusSeeOther, "/")
+	}
+}
+
+func breakHandler(tc *TodoClient) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		tc.Break()
 		c.Redirect(http.StatusSeeOther, "/")
 	}
 }
@@ -171,9 +194,9 @@ func main() {
 	r.StaticFS("/static", http.FS(staticFolder))
 
 	port := readEnv("PORT", "8080")
-	picture := readEnv("PICTURE", "/dev/null")
-	pictureApi := readEnv("PICTURE_API", "localhost")
-	todosApi := readEnv("TODOS_API", "localhost")
+	picture := readEnv("PICTURE", "/tmp/todo-app.jpg")
+	pictureApi := readEnv("PICTURE_API", "https://picsum.photos/600")
+	todosApi := readEnv("TODOS_API", "http://localhost:8084")
 	cacheIntervalString := readEnv("CACHE_INTERVAL", "10m")
 	cacheInterval, err := time.ParseDuration(cacheIntervalString)
 	if err != nil {
@@ -185,12 +208,13 @@ func main() {
 
 	tc := &TodoClient{
 		BaseURL: todosApi,
-		Client: &http.Client{},
+		Client:  &http.Client{},
 	}
 
 	r.GET("/", createIndexHandler(tc))
 	r.POST("/todos", createTodoHandler(tc))
 	r.GET("/picture", createPictureHandler(picture, pictureApi, cacheInterval))
+	r.POST("/break", breakHandler(tc))
 
 	fmt.Println("Server started in port", port)
 	r.Run(":" + port)

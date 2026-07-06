@@ -6,6 +6,8 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"sync/atomic"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-playground/validator/v10"
@@ -17,8 +19,48 @@ type Todo struct {
 	Text string `binding:"required,max=140"`
 }
 
+type App struct {
+	conn atomic.Pointer[Connection]
+	isHealthy atomic.Bool
+	logger *slog.Logger
+}
+
 type Connection struct {
 	conn *pgx.Conn
+}
+
+func (app *App) IsHealthy(ctx context.Context) bool {
+	conn := app.conn.Load()
+	isHealthy := app.isHealthy.Load()
+	if conn == nil {
+		return false
+	}
+
+	return conn.conn.Ping(ctx) == nil && isHealthy
+}
+
+func (app *App) Connection() *Connection {
+	return app.conn.Load()
+}
+
+func tryConnectUntilConnected(app *App, databaseUrl string) {
+	for {
+		ctx := context.Background()
+		conn, err := Connect(ctx, databaseUrl)
+		if err != nil {
+			app.logger.Error(
+				"failed to connect to database",
+				"error", err,
+			)
+			time.Sleep(5 * time.Second)
+			continue
+		}
+
+		conn.Initialize(ctx)
+		app.conn.Store(conn)
+		app.logger.Info("connected to database")
+		return
+	}
 }
 
 func Connect(ctx context.Context, databaseUrl string) (*Connection, error) {
@@ -82,44 +124,68 @@ func readEnv(env, fallback string) string {
 	}
 }
 
-func fetchTodosHandler(conn *Connection) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		todos, err := conn.GetTodos(c.Request.Context())
-		if err != nil {
-			c.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
-		c.JSON(http.StatusOK, todos)
+func (app *App) FetchTodos(c *gin.Context) {
+	todos, err := app.Connection().GetTodos(c.Request.Context())
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
 	}
+	c.JSON(http.StatusOK, todos)
 }
 
-func createTodoHandler(conn *Connection, logger *slog.Logger) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		var todo Todo
+func (app *App) CreateTodo(c *gin.Context) {
+	var todo Todo
 
-		if err := c.ShouldBindJSON(&todo); err != nil {
-			logger.Warn(
-				"validation-error",
-				"error", err.Error(),
-			)
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": err.Error(),
+	if err := c.ShouldBindJSON(&todo); err != nil {
+		app.logger.Warn(
+			"validation-error",
+			"error", err.Error(),
+		)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	err := app.Connection().CreateTodo(c.Request.Context(), todo)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	app.logger.Info(
+		"created_todo",
+		"text", todo.Text,
+	)
+
+	c.JSON(http.StatusCreated, todo)
+}
+
+func (app *App) Health(c *gin.Context) {
+	if !app.IsHealthy(c.Request.Context()) {
+		c.AbortWithStatus(http.StatusServiceUnavailable)
+		return
+	}
+
+	c.Status(http.StatusOK)
+}
+
+func (app *App) Break(c *gin.Context) {
+	app.isHealthy.Store(false)
+	app.logger.Error("app broke")
+	c.Status(http.StatusCreated)
+}
+
+func (app *App) requireReady(next gin.HandlerFunc) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if !app.IsHealthy(c.Request.Context()) {
+			c.JSON(http.StatusServiceUnavailable, gin.H{
+				"error": "service unavailable",
 			})
 			return
 		}
 
-		err := conn.CreateTodo(c.Request.Context(), todo)
-		if err != nil {
-			c.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
-
-		logger.Info(
-			"created_todo",
-			"text", todo.Text,
-		)
-
-		c.JSON(http.StatusCreated, todo)
+		next(c)
 	}
 }
 
@@ -143,26 +209,23 @@ func main() {
 	r.Use(SlogMiddleware(logger))
 
 	port := readEnv("PORT", "8080")
-
 	databaseUrl := fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/postgres",
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
+		readEnv("DB_USER", "postgres"),
+		readEnv("DB_PASSWORD", "postgres"),
+		readEnv("DB_HOST", "localhost"),
+		readEnv("DB_PORT", "5432"),
 	)
 
-	ctx := context.Background()
-	conn, err := Connect(ctx, databaseUrl)
-	if err != nil {
-		panic(err)
-	}
-	defer conn.conn.Close(ctx)
-	conn.Initialize(ctx)
+	app := App{logger: logger}
+	app.isHealthy.Store(true)
 
-	r.GET("/todos", fetchTodosHandler(conn))
-	r.POST("/todos", createTodoHandler(conn, logger))
+	r.GET("/todos", app.requireReady(app.FetchTodos))
+	r.POST("/todos", app.requireReady(app.CreateTodo))
+	r.GET("/healthz", app.Health)
+	r.POST("/break", app.Break)
 
 	fmt.Println("Server started in port", port)
+	go tryConnectUntilConnected(&app, databaseUrl)
 	r.Run(":" + port)
 }
