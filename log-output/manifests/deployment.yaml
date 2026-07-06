@@ -23,7 +23,7 @@ spec:
               path: "information.txt"
       containers:
         - name: log-output-writer
-          image: fallmx/log-output:2.5
+          image: fallmx/log-output:4.1
           volumeMounts:
           - name: log-output-share
             mountPath: /mnt/log-output-share
@@ -33,12 +33,18 @@ spec:
           - name: LOG_FILE
             value: /mnt/log-output-share/log
         - name: log-output-reader
-          image: fallmx/log-output:2.5
+          image: fallmx/log-output:4.1
           volumeMounts:
           - name: log-output-share
             mountPath: /mnt/log-output-share
           - name: log-output-config
             mountPath: /mnt/log-output-config
+          readinessProbe:
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            httpGet:
+               path: /healthz
+               port: 8082
           env:
           - name: ROLE
             value: reader

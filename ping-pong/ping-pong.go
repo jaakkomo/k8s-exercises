@@ -5,9 +5,15 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sync/atomic"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 )
+
+type App struct {
+	conn atomic.Pointer[Connection]
+}
 
 type Connection struct {
 	conn *pgx.Conn
@@ -57,27 +63,75 @@ FROM pings
 	return count, err
 }
 
-func indexHandler(conn *Connection) http.HandlerFunc {
+func (app *App) HasDbConnection(ctx context.Context) bool {
+	conn := app.conn.Load()
+	if conn == nil {
+		return false
+	}
+
+	return conn.conn.Ping(ctx) == nil
+}
+
+func (app *App) Connection() *Connection {
+	return app.conn.Load()
+}
+
+func (app *App) Index(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	oldCount, err := app.Connection().GetPingsCount(ctx)
+	app.Connection().InsertPing(ctx)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+	fmt.Fprintf(w, "pong %d\n", oldCount)
+}
+
+func (app *App) Pings(w http.ResponseWriter, r *http.Request) {
+	count, err := app.Connection().GetPingsCount(r.Context())
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+	fmt.Fprintf(w, "%d", count)
+}
+
+func (app *App) Health(w http.ResponseWriter, r *http.Request) {
+	if !app.HasDbConnection(r.Context()) {
+		w.WriteHeader(http.StatusServiceUnavailable)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func (app *App) requireReady(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		oldCount, err := conn.GetPingsCount(ctx)
-		conn.InsertPing(ctx)
-		if err != nil {
-			http.Error(w, "internal error", http.StatusInternalServerError)
+		if !app.HasDbConnection(r.Context()) {
+			http.Error(w, "service unavailable", http.StatusServiceUnavailable)
 			return
 		}
-		fmt.Fprintf(w, "pong %d\n", oldCount)
+
+		next(w, r)
 	}
 }
 
-func pingsHandler(conn *Connection) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		count, err := conn.GetPingsCount(r.Context())
+func tryConnectUntilConnected(app *App, databaseUrl string) {
+	for {
+		ctx := context.Background()
+		conn, err := Connect(ctx, databaseUrl)
 		if err != nil {
-			http.Error(w, "internal error", http.StatusInternalServerError)
-			return
+			fmt.Println(err)
+			time.Sleep(5 * time.Second)
+			continue
 		}
-		fmt.Fprintf(w, "%d", count)
+
+		conn.Initialize(ctx)
+		app.conn.Store(conn)
+		fmt.Println("connected to database")
+		return
 	}
 }
 
@@ -94,22 +148,18 @@ func main() {
 
 	databaseUrl := fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/postgres",
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
+		readEnv("DB_USER", "postgres"),
+		readEnv("DB_PASSWORD", "postgres"),
+		readEnv("DB_HOST", "localhost"),
+		readEnv("DB_PORT", "5432"),
 	)
 
-	ctx := context.Background()
-	conn, err := Connect(ctx, databaseUrl)
-	if err != nil {
-		panic(err)
-	}
-	defer conn.conn.Close(ctx)
-	conn.Initialize(ctx)
+	app := App{}
 
-	http.HandleFunc("/", indexHandler(conn))
-	http.HandleFunc("/pings", pingsHandler(conn))
+	http.HandleFunc("/", app.requireReady(app.Index))
+	http.HandleFunc("/pings", app.requireReady(app.Pings))
+	http.HandleFunc("/healthz", app.Health)
 	fmt.Println("Server started in port", port)
+	go tryConnectUntilConnected(&app, databaseUrl)
 	http.ListenAndServe(":"+port, nil)
 }

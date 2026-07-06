@@ -14,7 +14,13 @@ spec:
     spec:
       containers:
         - name: ping-pong
-          image: fallmx/ping-pong:2.7
+          image: fallmx/ping-pong:4.1
+          readinessProbe:
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            httpGet:
+               path: /healthz
+               port: 8083
           env:
           - name: PORT
             value: "8083"
