@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: exercises
+resources:
+- manifests/database.yaml
+- manifests/deployment.yaml
+- manifests/service.yaml
+- manifests/httproute.yaml
+secretGenerator:
+  - name: ping-pong-postgres
+    literals:
+      - username=postgres
+      - password=postgres
+generatorOptions:
+  disableNameSuffixHash: true

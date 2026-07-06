@@ -8,15 +8,17 @@ Ensure namespace `project` exists:
 kubectl create namespace project
 ```
 
+Create shared resources:
+
+``` shell
+kubectl apply -k ../shared
+```
+
 Deploy:
 
 ``` shell
 kubectl apply -k .
 ```
-
-### Deploying backup for todos
-
-See `./backup/README.md` for deploying a backup CronJob in a Google Cloud environment.
 
 ## 3.9. DBaaS vs DIY
 

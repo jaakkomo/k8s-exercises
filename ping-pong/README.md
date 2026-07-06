@@ -8,23 +8,20 @@ PORT=<port> DB_USER=<username> DB_PASSWORD=<password> DB_HOST=<hostname> DB_PORT
 
 ## Deployment
 
-Create namespace `exercises`:
+Ensure namespace `exercises` exists:
+
 ``` shell
-kubectl apply -f ../shared/ns-exercises.yaml
+kubectl create namespace exercises
 ```
 
-Create secret for Postgres database:
+Create shared resources:
 
 ``` shell
-kubectl create secret generic ping-pong-postgres \
-  --namespace exercises \
-  --from-literal=username=postgres \
-  --from-literal=password=postgres
+kubectl apply -k ../shared
 ```
 
-Deploy app:
+Deploy:
 
 ``` shell
-kubectl apply -f ../shared/gateway.yaml
-kubectl apply -f manifests
+kubectl apply -k .
 ```

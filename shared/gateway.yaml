@@ -4,7 +4,7 @@ metadata:
   name: dwk-cluster-gateway
   namespace: default
 spec:
-  gatewayClassName: gke-l7-global-external-managed
+  gatewayClassName: eg
   listeners:
   - name: http
     protocol: HTTP

@@ -1,9 +1,10 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  namespace: exercises
   name: log-output
 spec:
+  hostnames:
+    - localhost
   parentRefs:
   - name: dwk-cluster-gateway
     namespace: default

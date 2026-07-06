@@ -9,11 +9,17 @@ spec:
     spec:
       template:
         spec:
-          serviceAccountName: todo-backup
           restartPolicy: OnFailure
+          volumes:
+            - name: backups
+              persistentVolumeClaim:
+                claimName: todo-backup
           containers:
           - name: todo-backup
-            image: fallmx/postgres-gcloud:18
+            image: postgres:18
+            volumeMounts:
+              - name: backups
+                mountPath: /mnt/backups
             env:
             - name: PGHOST
               value: todo-backend-postgres
@@ -38,11 +44,7 @@ spec:
               set -e
 
               DATE=$(date +%F)
-              FILE=/tmp/backup-${DATE}.sql.gz
+              FILE=/mnt/backups/backup-${DATE}.sql.gz
 
               pg_dump | gzip > "$FILE"
-
-              /root/google-cloud-sdk/bin/gcloud storage cp \
-                --content-type=application/octet-stream \
-                "$FILE" \
-                "gs://dwk-cluster-backup/backup-${DATE}.sql.gz"
+              echo "backup written to $FILE"

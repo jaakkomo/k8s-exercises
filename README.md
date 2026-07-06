@@ -1,5 +1,13 @@
 # k8s-exercises
 
+## Creation of local cluster
+
+``` shell
+k3d cluster create --agents 2 -p 8080:80@loadbalancer --k3s-arg '--disable=traefik@server:0'
+kubectl apply --server-side -f https://github.com/envoyproxy/gateway/releases/download/v1.8.2/install.yaml
+kubectl -n envoy-gateway-system rollout status deployment/envoy-gateway --timeout=180s
+```
+
 ## Chapter 2
 
 - [1.1.](https://github.com/jaakkomo/k8s-exercises/tree/1.1/log-output)

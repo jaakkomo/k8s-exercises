@@ -10,8 +10,20 @@ ROLE=<"writer"/"reader"> LOG_FILE=<file> FILE=<file> MESSAGE=<text> PINGS_API=<l
 
 ## Deployment
 
+Ensure namespace `exercises` exists:
+
 ``` shell
-kubectl apply -f ../shared/ns-exercises.yaml
-kubectl apply -f ../shared/gateway.yaml
-kubectl apply -f manifests
+kubectl create namespace exercises
+```
+
+Create shared resources:
+
+``` shell
+kubectl apply -k ../shared
+```
+
+Deploy:
+
+``` shell
+kubectl apply -k .
 ```
