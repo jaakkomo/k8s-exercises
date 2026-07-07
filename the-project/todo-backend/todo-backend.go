@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strconv"
 	"sync/atomic"
 	"time"
 
@@ -17,12 +18,13 @@ import (
 type Todo struct {
 	ID   int64
 	Text string `binding:"required,max=140"`
+	Done bool
 }
 
 type App struct {
-	conn atomic.Pointer[Connection]
+	conn      atomic.Pointer[Connection]
 	isHealthy atomic.Bool
-	logger *slog.Logger
+	logger    *slog.Logger
 }
 
 type Connection struct {
@@ -83,6 +85,9 @@ CREATE TABLE IF NOT EXISTS todos (
     text VARCHAR(140) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE todos
+ADD COLUMN done BOOLEAN NOT NULL DEFAULT FALSE;
 `,
 	)
 	return err
@@ -98,9 +103,20 @@ VALUES ($1)
 	return err
 }
 
+func (c *Connection) MarkDone(ctx context.Context, id int64) error {
+	_, err := c.conn.Exec(ctx, `
+UPDATE todos
+SET done = TRUE
+WHERE id = $1
+`,
+		id,
+	)
+	return err
+}
+
 func (c *Connection) GetTodos(ctx context.Context) ([]Todo, error) {
 	rows, err := c.conn.Query(ctx, `
-SELECT id, text
+SELECT id, text, done
 FROM todos
 `,
 	)
@@ -159,6 +175,32 @@ func (app *App) CreateTodo(c *gin.Context) {
 	)
 
 	c.JSON(http.StatusCreated, todo)
+}
+
+func (app *App) MarkDone(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+
+	if err != nil {
+		c.AbortWithStatus(http.StatusBadGateway)
+		return
+	}
+
+	err = app.Connection().MarkDone(c.Request.Context(), id)
+	if err != nil {
+		app.logger.Error(
+			"mark done failed",
+			"error", err,
+		)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	app.logger.Info(
+		"marked_done",
+		"id", id,
+	)
+
+	c.Status(http.StatusOK)
 }
 
 func (app *App) Health(c *gin.Context) {
@@ -222,6 +264,7 @@ func main() {
 
 	r.GET("/todos", app.requireReady(app.FetchTodos))
 	r.POST("/todos", app.requireReady(app.CreateTodo))
+	r.PUT("/todos/:id", app.requireReady(app.MarkDone))
 	r.GET("/healthz", app.Health)
 	r.POST("/break", app.Break)
 

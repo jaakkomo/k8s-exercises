@@ -17,7 +17,16 @@
     <br>
     <div class="todo-list">
       {{ range .todos }}
-      <div class="todo">{{ .Text }}</div>
+      {{ if .Done }}
+      <div class="todo done">
+        <span>{{ .Text }}</span>
+      </div>
+      {{ else }}
+      <div class="todo">
+        <span>{{ .Text }}</span>
+        <form method="post" action="/todos/{{ .ID }}"><button type="submit">mark done</button></form>
+      </div>
+      {{ end }}
       {{ end }}
     </div>
     <br>

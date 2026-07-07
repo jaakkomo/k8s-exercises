@@ -61,3 +61,4 @@ kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/rele
 - [4.2.](https://github.com/jaakkomo/k8s-exercises/tree/4.2/the-project)
 - [4.3.](https://github.com/jaakkomo/k8s-exercises/tree/4.3/monitoring)
 - [4.4.](https://github.com/jaakkomo/k8s-exercises/tree/4.4/ping-pong)
+- [4.5.](https://github.com/jaakkomo/k8s-exercises/tree/4.5/the-project)

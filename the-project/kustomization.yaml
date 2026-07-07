@@ -7,6 +7,6 @@ resources:
 - backup/
 images:
   - name: PROJECT/TODO_BACKEND
-    newName: fallmx/todo-backend:4.2
+    newName: fallmx/todo-backend:4.5
   - name: PROJECT/TODO_APP
-    newName: fallmx/todo-app:4.2
+    newName: fallmx/todo-app:4.5

@@ -69,6 +69,7 @@ func downloadNewPicture(picture, pictureApi string) {
 type Todo struct {
 	ID   int64
 	Text string
+	Done bool
 }
 
 type TodoClient struct {
@@ -94,6 +95,22 @@ func (tc *TodoClient) CreateTodo(todo Todo) error {
 
 	if res.StatusCode >= 300 {
 		return fmt.Errorf("create todo failed: %s", res.Status)
+	}
+
+	return nil
+}
+
+func (tc *TodoClient) MarkDone(id string) error {
+	url := fmt.Sprintf("%s/todos/%s", tc.BaseURL, id)
+	req, _ := http.NewRequest(http.MethodPut, url, nil)
+	res, err := tc.Client.Do(req)
+
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode >= 300 {
+		return fmt.Errorf("mark done failed: %s", res.Status)
 	}
 
 	return nil
@@ -148,6 +165,19 @@ func createTodoHandler(tc *TodoClient) gin.HandlerFunc {
 		err := tc.CreateTodo(Todo{
 			Text: c.PostForm("text"),
 		})
+
+		if err != nil {
+			c.Status(http.StatusBadGateway)
+			return
+		}
+
+		c.Redirect(http.StatusSeeOther, "/")
+	}
+}
+
+func markDoneHandler(tc *TodoClient) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		err := tc.MarkDone(c.Param("id"))
 
 		if err != nil {
 			c.Status(http.StatusBadGateway)
@@ -213,6 +243,7 @@ func main() {
 
 	r.GET("/", createIndexHandler(tc))
 	r.POST("/todos", createTodoHandler(tc))
+	r.POST("/todos/:id", markDoneHandler(tc))
 	r.GET("/picture", createPictureHandler(picture, pictureApi, cacheInterval))
 	r.POST("/break", breakHandler(tc))
 

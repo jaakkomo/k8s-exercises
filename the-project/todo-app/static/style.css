@@ -21,9 +21,19 @@ body {
 }
 
 .todo {
+    display: flex;
+    justify-content: space-between;
     background-color: lightgray;
     border: 2px groove black;
     padding: 0.5rem;
+}
+
+.todo.done {
+    background-color: lightgreen;
+}
+
+.todo.done span {
+    text-decoration: line-through;
 }
 
 img.unhealthy {
