@@ -35,3 +35,9 @@ helm upgrade --install grafana grafana/grafana \
   --namespace monitoring \
   --values grafana-values.yaml
 ```
+
+## 4.3. Querying in Prometheus
+
+Query number of pods created by StatefulSets in `monitoring` namespace. The exercise says `prometheus` namespace, but I have them under `monitoring` as per the exercise in Chapter 3.
+
+![Prometheus query](prometheus_query.png)
