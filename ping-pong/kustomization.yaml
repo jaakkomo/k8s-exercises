@@ -3,6 +3,7 @@ kind: Kustomization
 namespace: exercises
 resources:
 - manifests/database.yaml
+- manifests/cpuanalysis.yaml
 - manifests/deployment.yaml
 - manifests/service.yaml
 - manifests/httproute.yaml

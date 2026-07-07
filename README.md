@@ -6,6 +6,9 @@
 k3d cluster create --agents 2 -p 8080:80@loadbalancer --k3s-arg '--disable=traefik@server:0'
 kubectl apply --server-side -f https://github.com/envoyproxy/gateway/releases/download/v1.8.2/install.yaml
 kubectl -n envoy-gateway-system rollout status deployment/envoy-gateway --timeout=180s
+
+kubectl create namespace argo-rollouts
+kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
 ```
 
 ## Chapter 2
@@ -57,3 +60,4 @@ kubectl -n envoy-gateway-system rollout status deployment/envoy-gateway --timeou
 - [4.1.](https://github.com/jaakkomo/k8s-exercises/tree/4.1)
 - [4.2.](https://github.com/jaakkomo/k8s-exercises/tree/4.2/the-project)
 - [4.3.](https://github.com/jaakkomo/k8s-exercises/tree/4.3/monitoring)
+- [4.4.](https://github.com/jaakkomo/k8s-exercises/tree/4.4/ping-pong)
