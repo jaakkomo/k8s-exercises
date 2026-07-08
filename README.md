@@ -9,6 +9,12 @@ kubectl -n envoy-gateway-system rollout status deployment/envoy-gateway --timeou
 
 kubectl create namespace argo-rollouts
 kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+
+helm repo add nats https://nats-io.github.io/k8s/helm/charts
+helm repo update
+helm upgrade --install nats nats/nats \
+  --namespace nats \
+  --create-namespace
 ```
 
 ## Chapter 2
@@ -62,3 +68,4 @@ kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/rele
 - [4.3.](https://github.com/jaakkomo/k8s-exercises/tree/4.3/monitoring)
 - [4.4.](https://github.com/jaakkomo/k8s-exercises/tree/4.4/ping-pong)
 - [4.5.](https://github.com/jaakkomo/k8s-exercises/tree/4.5/the-project)
+- [4.6.](https://github.com/jaakkomo/k8s-exercises/tree/4.6/the-project)

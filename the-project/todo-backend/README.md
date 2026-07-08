@@ -3,7 +3,7 @@
 ## Startup
 
 ``` shell
-PORT=<port> DB_USER=<username> DB_PASSWORD=<password> DB_HOST=<hostname> DB_PORT=<port> go run .
+PORT=<port> NATS_URL=<nats api> DB_USER=<username> DB_PASSWORD=<password> DB_HOST=<hostname> DB_PORT=<port> go run .
 ```
 
 ## Deployment

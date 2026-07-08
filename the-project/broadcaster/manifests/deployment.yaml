@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: broadcaster
+spec:
+  replicas: 6
+  selector:
+    matchLabels:
+      app: broadcaster
+  template:
+    metadata:
+      labels:
+        app: broadcaster
+    spec:
+      containers:
+        - name: broadcaster
+          image: fallmx/broadcaster:4.6
+          env:
+          - name: NATS_URL
+            value: nats://nats.nats.svc.cluster.local:4222
+          - name: DISCORD_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: broadcaster
+                key: token
+          - name: DISCORD_CHANNEL_ID
+            valueFrom:
+              secretKeyRef:
+                name: broadcaster
+                key: channel

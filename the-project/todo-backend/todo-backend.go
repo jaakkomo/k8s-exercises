@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5"
+	"github.com/nats-io/nats.go"
 )
 
 type Todo struct {
@@ -25,6 +26,7 @@ type App struct {
 	conn      atomic.Pointer[Connection]
 	isHealthy atomic.Bool
 	logger    *slog.Logger
+	nc        *nats.Conn
 }
 
 type Connection struct {
@@ -103,15 +105,22 @@ VALUES ($1)
 	return err
 }
 
-func (c *Connection) MarkDone(ctx context.Context, id int64) error {
-	_, err := c.conn.Exec(ctx, `
+func (c *Connection) MarkDone(ctx context.Context, id int64) (Todo, error) {
+	rows, err := c.conn.Query(ctx, `
 UPDATE todos
 SET done = TRUE
 WHERE id = $1
+RETURNING id, text, done
 `,
 		id,
 	)
-	return err
+	if err != nil {
+		return Todo{}, err
+	}
+
+	todo, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[Todo])
+
+	return todo, nil
 }
 
 func (c *Connection) GetTodos(ctx context.Context) ([]Todo, error) {
@@ -174,6 +183,8 @@ func (app *App) CreateTodo(c *gin.Context) {
 		"text", todo.Text,
 	)
 
+	app.nc.Publish("created_todo", []byte(todo.Text))
+
 	c.JSON(http.StatusCreated, todo)
 }
 
@@ -185,7 +196,7 @@ func (app *App) MarkDone(c *gin.Context) {
 		return
 	}
 
-	err = app.Connection().MarkDone(c.Request.Context(), id)
+	todo, err := app.Connection().MarkDone(c.Request.Context(), id)
 	if err != nil {
 		app.logger.Error(
 			"mark done failed",
@@ -199,6 +210,8 @@ func (app *App) MarkDone(c *gin.Context) {
 		"marked_done",
 		"id", id,
 	)
+
+	app.nc.Publish("marked_done", []byte(todo.Text))
 
 	c.Status(http.StatusOK)
 }
@@ -258,8 +271,14 @@ func main() {
 		readEnv("DB_HOST", "localhost"),
 		readEnv("DB_PORT", "5432"),
 	)
+	natsUrl := readEnv("NATS_URL", "nats://localhost:4222")
 
-	app := App{logger: logger}
+	nc, err := nats.Connect(natsUrl)
+	if err != nil {
+		panic(err)
+	}
+
+	app := App{logger: logger, nc: nc}
 	app.isHealthy.Store(true)
 
 	r.GET("/todos", app.requireReady(app.FetchTodos))
