@@ -34,11 +34,12 @@ func (app *App) Index(w http.ResponseWriter, req *http.Request) {
 	}
 	defer res.Body.Close()
 
-	fmt.Fprintf(w, "file content: %s", string(fileData))
-	fmt.Fprintf(w, "env variable: MESSAGE=%s\n", app.message)
 	fmt.Fprint(w, string(logData))
 	fmt.Fprint(w, "Ping / Pongs: ")
 	io.Copy(w, res.Body)
+	fmt.Fprintf(w, "\nenv variable: MESSAGE=%s\n", app.message)
+	fmt.Fprintln(w, "file content:")
+	fmt.Fprint(w, string(fileData))
 }
 
 func (app *App) Health(w http.ResponseWriter, req *http.Request) {
