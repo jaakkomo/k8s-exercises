@@ -7,9 +7,12 @@ resources:
 - broadcaster/
 - backup/
 images:
-  - name: PROJECT/TODO_BACKEND
-    newName: fallmx/todo-backend
-  - name: PROJECT/TODO_APP
-    newName: fallmx/todo-app
-  - name: PROJECT/BROADCASTER
-    newName: fallmx/broadcaster
+- name: PROJECT/BROADCASTER
+  newName: fallmx/broadcaster
+  newTag: 5480d3249c6b28c4197c9e599be679bb2c0e3ec0
+- name: PROJECT/TODO_APP
+  newName: fallmx/todo-app
+  newTag: 5480d3249c6b28c4197c9e599be679bb2c0e3ec0
+- name: PROJECT/TODO_BACKEND
+  newName: fallmx/todo-backend
+  newTag: 5480d3249c6b28c4197c9e599be679bb2c0e3ec0
