@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - '**'
+    paths:
+      - 'log-output/**'
 
 jobs:
   build-publish:
@@ -38,4 +40,4 @@ jobs:
         uses: EndBug/add-and-commit@v10
         with:
           add: 'log-output/kustomization.yaml'
-          message: New version released ${{ github.sha }}
+          message: New version of log-output released ${{ github.sha }}

@@ -12,6 +12,8 @@ NATS_URL=<nats api> DISCORD_TOKEN=<discord bot token> DISCORD_CHANNEL_ID=<discor
 
 ## Deployment
 
+You probably want to deploy the whole stack, see `../README.md`. Here is deployment for `broadcaster` only:
+
 Ensure namespace `project` exists:
 
 ``` shell

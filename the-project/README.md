@@ -8,6 +8,17 @@ Ensure namespace `project` exists:
 kubectl create namespace project
 ```
 
+Create a Discord bot and add it to a server of your choosing.
+
+Create a secret for the Discord credentials:
+
+``` shell
+kubectl create secret generic broadcaster \
+    --namespace=project \
+    --from-literal=token=<discord bot token> \
+    --from-literal=channel=<channel id to send messages to>
+```
+
 Create shared resources:
 
 ``` shell
@@ -19,10 +30,6 @@ Deploy:
 ``` shell
 kubectl apply -k .
 ```
-
-## Broadcaster deployment
-
-See `./broadcaster/README.md` on how to deploy the todo broadcaster, which sends todo updates to a Discord channel.
 
 ## 3.9. DBaaS vs DIY
 

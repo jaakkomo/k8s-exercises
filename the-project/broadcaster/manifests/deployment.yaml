@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: broadcaster
-          image: fallmx/broadcaster:4.6
+          image: PROJECT/BROADCASTER
           env:
           - name: NATS_URL
             value: nats://nats.nats.svc.cluster.local:4222
