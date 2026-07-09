@@ -15,6 +15,10 @@ helm repo update
 helm upgrade --install nats nats/nats \
   --namespace nats \
   --create-namespace
+
+kubectl create namespace argocd
+kubectl apply -n argocd --server-side=true --force-conflicts \
+  -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
 
 ## Chapter 2
@@ -69,3 +73,4 @@ helm upgrade --install nats nats/nats \
 - [4.4.](https://github.com/jaakkomo/k8s-exercises/tree/4.4/ping-pong)
 - [4.5.](https://github.com/jaakkomo/k8s-exercises/tree/4.5/the-project)
 - [4.6.](https://github.com/jaakkomo/k8s-exercises/tree/4.6/the-project)
+- [4.7.](https://github.com/jaakkomo/k8s-exercises/tree/4.7/log-output)
