@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://github.com/jaakkomo/k8s-exercises
     path: the-project/overlays/prod
-    targetRevision: HEAD
+    targetRevision: "4.9"
   destination:
     server: https://kubernetes.default.svc
     namespace: production
