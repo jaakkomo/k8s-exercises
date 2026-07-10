@@ -39,6 +39,7 @@ jobs:
 
       - name: Edit images in kustomization.yaml
         run: |-
+          cd base
           kustomize edit set image PROJECT/TODO_BACKEND=fallmx/todo-backend:$GITHUB_SHA
           kustomize edit set image PROJECT/TODO_APP=fallmx/todo-app:$GITHUB_SHA
           kustomize edit set image PROJECT/BROADCASTER=fallmx/broadcaster:$GITHUB_SHA
@@ -46,5 +47,5 @@ jobs:
       - name: Commit kustomization.yaml
         uses: EndBug/add-and-commit@v10
         with:
-          add: 'the-project/kustomization.yaml'
+          add: 'the-project/base/kustomization.yaml'
           message: New version of the-project released ${{ github.sha }}

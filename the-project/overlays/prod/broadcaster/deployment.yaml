@@ -4,20 +4,11 @@ metadata:
   name: broadcaster
 spec:
   replicas: 6
-  selector:
-    matchLabels:
-      app: broadcaster
   template:
-    metadata:
-      labels:
-        app: broadcaster
     spec:
       containers:
         - name: broadcaster
-          image: PROJECT/BROADCASTER
           env:
-          - name: NATS_URL
-            value: nats://nats.nats.svc.cluster.local:4222
           - name: DISCORD_TOKEN
             valueFrom:
               secretKeyRef:

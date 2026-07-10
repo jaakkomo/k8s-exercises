@@ -4,4 +4,4 @@ metadata:
   name: todo-app
 spec:
   hostnames:
-    - ${HOSTNAME}
+    - staging.localhost

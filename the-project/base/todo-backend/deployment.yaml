@@ -54,4 +54,4 @@ spec:
           - name: DB_PORT
             value: "5432"
           - name: NATS_URL
-            value: nats://nats.nats.svc.cluster.local:4222
+            value: nats://nats:4222

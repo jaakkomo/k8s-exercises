@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- todo-backend/
+- todo-app/
+- broadcaster/
+images:
+- name: PROJECT/BROADCASTER
+  newName: fallmx/broadcaster
+  newTag: 15c2cb2c5132086f24c4a817f3ff6fd73eb741c1
+- name: PROJECT/TODO_APP
+  newName: fallmx/todo-app
+  newTag: 15c2cb2c5132086f24c4a817f3ff6fd73eb741c1
+- name: PROJECT/TODO_BACKEND
+  newName: fallmx/todo-backend
+  newTag: 15c2cb2c5132086f24c4a817f3ff6fd73eb741c1

@@ -2,19 +2,29 @@
 
 ## Deployment
 
-Ensure namespace `project` exists:
+Ensure namespaces `production` and `staging` exist:
 
 ``` shell
-kubectl create namespace project
+kubectl create namespace production
+kubectl create namespace staging
+```
+
+Create NATS servers for both namespaces:
+
+``` shell
+helm upgrade --install nats nats/nats \
+  --namespace production
+helm upgrade --install nats nats/nats \
+  --namespace staging
 ```
 
 Create a Discord bot and add it to a server of your choosing.
 
-Create a secret for the Discord credentials:
+Create a secret for the Discord credentials (production only):
 
 ``` shell
 kubectl create secret generic broadcaster \
-    --namespace=project \
+    --namespace=production \
     --from-literal=token=<discord bot token> \
     --from-literal=channel=<channel id to send messages to>
 ```
@@ -28,7 +38,7 @@ kubectl apply -k ../shared
 Deploy:
 
 ``` shell
-kubectl apply -k .
+kubectl apply -f application.yaml
 ```
 
 ## 3.9. DBaaS vs DIY
