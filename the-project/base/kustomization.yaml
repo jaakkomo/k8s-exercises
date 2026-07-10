@@ -7,10 +7,10 @@ resources:
 images:
 - name: PROJECT/BROADCASTER
   newName: fallmx/broadcaster
-  newTag: 15c2cb2c5132086f24c4a817f3ff6fd73eb741c1
+  newTag: 1f55673c6caef9775378faa056d939f7fd90fc0b
 - name: PROJECT/TODO_APP
   newName: fallmx/todo-app
-  newTag: 15c2cb2c5132086f24c4a817f3ff6fd73eb741c1
+  newTag: 1f55673c6caef9775378faa056d939f7fd90fc0b
 - name: PROJECT/TODO_BACKEND
   newName: fallmx/todo-backend
-  newTag: 15c2cb2c5132086f24c4a817f3ff6fd73eb741c1
+  newTag: 1f55673c6caef9775378faa056d939f7fd90fc0b
