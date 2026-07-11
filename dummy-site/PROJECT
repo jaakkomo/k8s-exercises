@@ -8,4 +8,14 @@ layout:
 - go.kubebuilder.io/v4
 projectName: dummy-site
 repo: github.com/jaakkomo/k8s-exercises/dummy-site
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: jaakkomo.dwk
+  group: web
+  kind: DummySite
+  path: github.com/jaakkomo/k8s-exercises/dummy-site/api/v1
+  version: v1
 version: "3"

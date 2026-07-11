@@ -34,6 +34,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/metrics/filters"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+
+	webv1 "github.com/jaakkomo/k8s-exercises/dummy-site/api/v1"
+	"github.com/jaakkomo/k8s-exercises/dummy-site/internal/controller"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -45,6 +48,7 @@ var (
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
+	utilruntime.Must(webv1.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -174,6 +178,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err := (&controller.DummySiteReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "Failed to create controller", "controller", "dummysite")
+		os.Exit(1)
+	}
 	// +kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
