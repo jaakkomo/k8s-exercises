@@ -54,7 +54,9 @@ var _ = Describe("DummySite Controller", func() {
 						Name:      resourceName,
 						Namespace: resourceNamespace,
 					},
-					// TODO(user): Specify other spec details if needed.
+					Spec: webv1.DummySiteSpec{
+						WebsiteURL: "https://example.com",
+					},
 				}
 				Expect(k8sClient.Create(ctx, resource)).To(Succeed())
 			}

@@ -6,4 +6,4 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: dummysite-sample
 spec:
-  # TODO(user): Add fields here
+  websiteUrl: https://en.wikipedia.org/wiki/Kubernetes

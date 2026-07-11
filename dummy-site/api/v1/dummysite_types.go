@@ -31,9 +31,9 @@ type DummySiteSpec struct {
 	// The following markers will use OpenAPI v3 schema to validate the value
 	// More info: https://book.kubebuilder.io/reference/markers/crd-validation.html
 
-	// foo is an example field of DummySite. Edit dummysite_types.go to remove/update
-	// +optional
-	Foo *string `json:"foo,omitempty"`
+	// websiteUrl defines the website to make a copy of
+	// +required
+	WebsiteURL string `json:"websiteUrl"`
 }
 
 // DummySiteStatus defines the observed state of DummySite.
@@ -61,6 +61,7 @@ type DummySiteStatus struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Website",type=string,JSONPath=`.spec.websiteUrl`
 
 // DummySite is the Schema for the dummysites API
 type DummySite struct {
