@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - '**'
-env:
-  TAG: ${{ github.ref_name }}
 
 jobs:
   deploy-prod:
@@ -13,16 +11,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Check images exist
+        run: |
+          docker manifest inspect fallmx/todo-backend:$GITHUB_SHA > /dev/null
+          docker manifest inspect fallmx/todo-app:$GITHUB_SHA > /dev/null
+          docker manifest inspect fallmx/broadcaster:$GITHUB_SHA > /dev/null
+
+      - name: Checkout manifests repo
         uses: actions/checkout@v6
         with:
-          ref: main
+          repository: jaakkomo/k8s-project-manifests
+          path: manifests
+          token: ${{ secrets.MANIFESTS_PAT }}
 
-      - name: Update targetRevision
-        run: yq -i '.spec.source.targetRevision = strenv(TAG)' the-project/application-prod.yaml
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v3
 
-      - name: Commit application-prod.yaml
+      - name: Update production images
+        working-directory: manifests/overlays/production
+        run: |-
+          kustomize edit set image PROJECT/TODO_BACKEND=fallmx/todo-backend:$GITHUB_SHA
+          kustomize edit set image PROJECT/TODO_APP=fallmx/todo-app:$GITHUB_SHA
+          kustomize edit set image PROJECT/BROADCASTER=fallmx/broadcaster:$GITHUB_SHA
+
+      - name: Commit production deployment
         uses: EndBug/add-and-commit@v10
         with:
-          add: 'the-project/application-prod.yaml'
-          message: 'New version of the-project released to prod: ${{ env.TAG }}'
+          cwd: manifests
+          add: 'overlays/production/kustomization.yaml'
+          message: Deploy tag ${{ github.ref_name }} (${{ github.sha }}) to production

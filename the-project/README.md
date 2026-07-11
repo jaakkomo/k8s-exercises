@@ -38,7 +38,7 @@ kubectl apply -k ../shared
 Deploy:
 
 ``` shell
-kubectl apply -f application.yaml
+kubectl apply -f https://raw.githubusercontent.com/jaakkomo/k8s-project-manifests/refs/heads/main/application.yaml
 ```
 
 ## 3.9. DBaaS vs DIY

@@ -73,3 +73,6 @@ kubectl apply -n argocd --server-side=true --force-conflicts \
 - [4.7.](https://github.com/jaakkomo/k8s-exercises/tree/4.7/log-output)
 - [4.8.](https://github.com/jaakkomo/k8s-exercises/tree/4.8/the-project)
 - [4.9.](https://github.com/jaakkomo/k8s-exercises/tree/4.9/the-project)
+- 4.10.
+  - [Manifests](https://github.com/jaakkomo/k8s-project-manifests/tree/4.10)
+  - [Workflows](https://github.com/jaakkomo/k8s-exercises/tree/4.10/.github/workflows)

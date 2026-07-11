@@ -11,9 +11,6 @@ jobs:
   build-publish:
     name: Build, Push, Release
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./the-project
 
     steps:
       - name: Checkout
@@ -26,6 +23,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and publish
+        working-directory: the-project
         run: |-
           docker build --tag "fallmx/todo-backend:$GITHUB_SHA" ./todo-backend
           docker push "fallmx/todo-backend:$GITHUB_SHA"
@@ -34,18 +32,26 @@ jobs:
           docker build --tag "fallmx/broadcaster:$GITHUB_SHA" ./broadcaster
           docker push "fallmx/broadcaster:$GITHUB_SHA"
 
+      - name: Checkout manifests repo
+        uses: actions/checkout@v6
+        with:
+          repository: jaakkomo/k8s-project-manifests
+          path: manifests
+          token: ${{ secrets.MANIFESTS_PAT }}
+
       - name: Set up Kustomize
         uses: imranismail/setup-kustomize@v3
 
-      - name: Edit images in kustomization.yaml
+      - name: Update staging images
+        working-directory: manifests/overlays/staging
         run: |-
-          cd base
           kustomize edit set image PROJECT/TODO_BACKEND=fallmx/todo-backend:$GITHUB_SHA
           kustomize edit set image PROJECT/TODO_APP=fallmx/todo-app:$GITHUB_SHA
           kustomize edit set image PROJECT/BROADCASTER=fallmx/broadcaster:$GITHUB_SHA
 
-      - name: Commit kustomization.yaml
+      - name: Commit staging deployment
         uses: EndBug/add-and-commit@v10
         with:
-          add: 'the-project/base/kustomization.yaml'
-          message: New version of the-project released ${{ github.sha }}
+          cwd: manifests
+          add: 'overlays/staging/kustomization.yaml'
+          message: Deploy ${{ github.sha }} to staging
