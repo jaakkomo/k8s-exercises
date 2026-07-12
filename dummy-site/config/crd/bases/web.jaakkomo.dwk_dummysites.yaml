@@ -43,6 +43,21 @@ spec:
           spec:
             description: spec defines the desired state of DummySite
             properties:
+              gatewayName:
+                default: gateway
+                description: gatewayName defines the name of the Gateway that the
+                  created HTTPRoute should connect to
+                type: string
+              gatewayNamespace:
+                default: default
+                description: gatewayNamespace defines the namespace of the Gateway
+                  that the created HTTPRoute should connect to
+                type: string
+              hostname:
+                default: localhost
+                description: hostname defines which HTTP Host header the created HTTPRoute
+                  should match against
+                type: string
               websiteUrl:
                 description: websiteUrl defines the website to make a copy of
                 type: string

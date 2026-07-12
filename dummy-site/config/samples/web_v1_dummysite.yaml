@@ -7,3 +7,5 @@ metadata:
   name: dummysite-sample
 spec:
   websiteUrl: https://en.wikipedia.org/wiki/Kubernetes
+  gatewayName: dwk-cluster-gateway
+  hostname: dummy.localhost

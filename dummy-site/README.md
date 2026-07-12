@@ -1,8 +1,42 @@
 # dummy-site
-// TODO(user): Add simple overview of use/purpose
+
+Create a web server hosting a simple copy of a website.
 
 ## Description
-// TODO(user): An in-depth paragraph about your project and overview of use
+
+Provides a Custom Resource Definition `DummySite`, which spins up an nginx container of the supplied website. This container is accessible through an HTTPRoute, which can be connected to a gateway of your choosing.
+
+## Quick start:
+
+Ensure you have a Gateway:
+
+``` shell
+kubectl apply -k ../shared
+```
+
+Install the `DummySite` CRD and its controller etc.:
+
+``` shell
+kubectl apply -f dist/install.yaml
+```
+
+Apply a `DummySite`:
+
+``` shell
+kubectl apply -f - <<EOF
+apiVersion: web.jaakkomo.dwk/v1
+kind: DummySite
+metadata:
+  name: dummysite-kubernetes
+spec:
+  websiteUrl: https://en.wikipedia.org/wiki/Kubernetes
+  gatewayName: dwk-cluster-gateway
+  gatewayNamespace: default
+  hostname: dummy.localhost
+EOF
+```
+
+After a while, you can see the site hosted at `dummy.localhost:<Gateway port>`.
 
 ## Getting Started
 
@@ -109,13 +143,6 @@ if you create webhooks, you need to use the above command with
 the '--force' flag and manually ensure that any custom configuration
 previously added to 'dist/chart/values.yaml' or 'dist/chart/manager/manager.yaml'
 is manually re-applied afterwards.
-
-## Contributing
-// TODO(user): Add detailed information on how you would like others to contribute to this project
-
-**NOTE:** Run `make help` for more information on all potential `make` targets
-
-More information can be found via the [Kubebuilder Documentation](https://book.kubebuilder.io/introduction.html)
 
 ## License
 

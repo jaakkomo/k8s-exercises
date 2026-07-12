@@ -34,6 +34,18 @@ type DummySiteSpec struct {
 	// websiteUrl defines the website to make a copy of
 	// +required
 	WebsiteURL string `json:"websiteUrl"`
+
+	// gatewayName defines the name of the Gateway that the created HTTPRoute should connect to
+	// +kubebuilder:default=gateway
+	GatewayName string `json:"gatewayName,omitempty"`
+
+	// gatewayNamespace defines the namespace of the Gateway that the created HTTPRoute should connect to
+	// +kubebuilder:default=default
+	GatewayNamespace string `json:"gatewayNamespace,omitempty"`
+
+	// hostname defines which HTTP Host header the created HTTPRoute should match against
+	// +kubebuilder:default=localhost
+	Hostname string `json:"hostname,omitempty"`
 }
 
 // DummySiteStatus defines the observed state of DummySite.
