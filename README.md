@@ -16,6 +16,11 @@ helm repo update
 kubectl create namespace argocd
 kubectl apply -n argocd --server-side=true --force-conflicts \
   -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+istioctl install \
+  --set profile=ambient \
+  --set values.global.platform=k3d \
+  --set values.cni.cniBinDir=/var/lib/rancher/k3s/data/cni
 ```
 
 ## Chapter 2
@@ -80,3 +85,4 @@ kubectl apply -n argocd --server-side=true --force-conflicts \
 ## Chapter 6
 
 - [5.1.](https://github.com/jaakkomo/k8s-exercises/tree/5.1/dummy-site)
+- [5.2.](https://github.com/jaakkomo/k8s-exercises/tree/5.2/istio-samples)
