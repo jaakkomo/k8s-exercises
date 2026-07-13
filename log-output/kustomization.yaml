@@ -10,4 +10,4 @@ resources:
 images:
 - name: PROJECT/IMAGE
   newName: fallmx/log-output
-  newTag: "5.3"
+  newTag: d7f9031a6cea83861a363ee3a73bdb62c575e4c3
