@@ -6,13 +6,12 @@ spec:
   hostnames:
     - localhost
   parentRefs:
-  - name: dwk-cluster-gateway
-    namespace: default
+  - name: log-output-istio
   rules:
   - matches:
     - path:
-        type: PathPrefix
-        value: /log
+        type: Exact
+        value: /
     backendRefs:
     - name: log-output
       port: 8082

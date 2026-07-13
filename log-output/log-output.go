@@ -18,26 +18,36 @@ func getStatus(msg string) string {
 }
 
 type App struct {
-	logFile  string
-	pingsApi string
-	file     string
-	message  string
+	logFile    string
+	pingsApi   string
+	greeterApi string
+	file       string
+	message    string
 }
 
 func (app *App) Index(w http.ResponseWriter, req *http.Request) {
 	fileData, _ := os.ReadFile(app.file)
 	logData, _ := os.ReadFile(app.logFile)
-	res, err := http.Get(app.pingsApi)
+	pingRes, err := http.Get(app.pingsApi)
 	if err != nil {
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
-	defer res.Body.Close()
+	defer pingRes.Body.Close()
+
+	greetRes, err := http.Get(app.greeterApi)
+	if err != nil {
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+	defer greetRes.Body.Close()
 
 	fmt.Fprint(w, string(logData))
 	fmt.Fprint(w, "Ping / Pongs: ")
-	io.Copy(w, res.Body)
+	io.Copy(w, pingRes.Body)
 	fmt.Fprintf(w, "\nenv variable: MESSAGE=%s\n", app.message)
+	fmt.Fprint(w, "greetings: ")
+	io.Copy(w, greetRes.Body)
 	fmt.Fprintln(w, "file content:")
 	fmt.Fprint(w, string(fileData))
 }
@@ -83,12 +93,14 @@ func main() {
 	role := readEnv("ROLE", "writer")
 	logFile := readEnv("LOG_FILE", "/tmp/log-output")
 	pingsApi := readEnv("PINGS_API", "http://localhost:8083/pings")
+	greeterApi := readEnv("GREETER_API", "http://localhost:8084/")
 	file := readEnv("FILE", "/dev/null")
 	message := readEnv("MESSAGE", "/dev/null")
 
 	app := App{
 		logFile,
 		pingsApi,
+		greeterApi,
 		file,
 		message,
 	}
@@ -103,6 +115,7 @@ func main() {
 		fmt.Println("File:", file)
 		fmt.Println("Message:", message)
 		fmt.Println("Pings API:", pingsApi)
+		fmt.Println("Greeter API:", greeterApi)
 		http.HandleFunc("/", app.Index)
 		http.HandleFunc("/healthz", app.Health)
 		fmt.Println("Server started in port", port)

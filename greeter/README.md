@@ -1,9 +1,9 @@
-# ping-pong
+# greeter
 
 ## Startup
 
 ``` shell
-PORT=<port> DB_USER=<username> DB_PASSWORD=<password> DB_HOST=<hostname> DB_PORT=<port> go run .
+PORT=<port> go run .
 ```
 
 ## Deployment

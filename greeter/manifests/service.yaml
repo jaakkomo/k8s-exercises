@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: greeter
+spec:
+  selector:
+    app: greeter
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: greeter-v1
+spec:
+  type: ClusterIP
+  selector:
+    app: greeter
+    version: v1
+  ports:
+    - protocol: TCP
+      port: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: greeter-v2
+spec:
+  type: ClusterIP
+  selector:
+    app: greeter
+    version: v2
+  ports:
+    - protocol: TCP
+      port: 8080

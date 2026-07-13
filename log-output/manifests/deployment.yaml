@@ -59,5 +59,7 @@ spec:
                 key: message
           - name: PINGS_API
             value: http://ping-pong:8083/pings
+          - name: GREETER_API
+            value: http://greeter:8080
           - name: PORT
             value: "8082"

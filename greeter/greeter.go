@@ -16,7 +16,7 @@ func readEnv(env, fallback string) string {
 
 func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "Hello from version 1")
+		fmt.Fprintln(w, "Hello from version 2")
 	})
 
 	port := readEnv("PORT", "8080")
