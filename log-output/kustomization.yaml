@@ -2,10 +2,10 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: exercises
 resources:
+- ../shared-istio/
 - manifests/configmap.yaml
 - manifests/deployment.yaml
 - manifests/service.yaml
-- manifests/gateway.yaml
 - manifests/httproute.yaml
 images:
 - name: PROJECT/IMAGE

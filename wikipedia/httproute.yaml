@@ -1,10 +1,10 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: log-output
+  name: wikipedia
 spec:
   hostnames:
-    - localhost
+    - wiki.localhost
   parentRefs:
   - name: gateway-istio
   rules:
@@ -13,5 +13,5 @@ spec:
         type: Exact
         value: /
     backendRefs:
-    - name: log-output
-      port: 8082
+    - name: wikipedia
+      port: 80

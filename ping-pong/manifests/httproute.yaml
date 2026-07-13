@@ -6,7 +6,7 @@ spec:
   hostnames:
     - localhost
   parentRefs:
-  - name: log-output-istio
+  - name: gateway-istio
   rules:
   - matches:
     - path:

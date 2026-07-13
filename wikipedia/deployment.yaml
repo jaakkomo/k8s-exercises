@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wikipedia
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wikipedia
+  template:
+    metadata:
+      labels:
+        app: wikipedia
+    spec:
+      volumes:
+        - name: website
+          emptyDir: {}
+      containers:
+        - name: nginx
+          image: nginx:1.31.2-alpine
+          volumeMounts:
+          - name: website
+            mountPath: /usr/share/nginx/html
+      initContainers:
+        - name: init-website
+          image: curlimages/curl:8.21.0
+          volumeMounts:
+          - name: website
+            mountPath: /website
+          command:
+          - /bin/sh
+          - -c
+          - 'curl -fsSL "https://en.wikipedia.org/wiki/Kubernetes" -o /website/index.html'
+        - name: get-random-website
+          image: curlimages/curl:8.21.0
+          restartPolicy: Always
+          volumeMounts:
+          - name: website
+            mountPath: /website
+          command:
+            - /bin/sh
+            - -c
+            - |
+              while true; do
+                sleep $((300 + RANDOM % 601))
+                curl -fsSL "https://en.wikipedia.org/wiki/Special:Random" -o /website/index.html.tmp &&
+                mv /website/index.html.tmp /website/index.html
+              done

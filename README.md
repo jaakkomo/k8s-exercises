@@ -87,3 +87,4 @@ istioctl install \
 - [5.1.](https://github.com/jaakkomo/k8s-exercises/tree/5.1/dummy-site)
 - [5.2.](https://github.com/jaakkomo/k8s-exercises/tree/5.2/istio-samples)
 - [5.3.](https://github.com/jaakkomo/k8s-exercises/tree/5.3)
+- [5.4.](https://github.com/jaakkomo/k8s-exercises/tree/5.4/wikipedia)
