@@ -146,6 +146,7 @@ data:
         root_namespace: istio-system
       prometheus:
         enabled: true
+        url: http://prom-prometheus-server.monitoring:80
       tracing:
         enabled: false
     identity:
