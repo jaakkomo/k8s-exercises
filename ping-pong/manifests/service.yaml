@@ -1,11 +1,33 @@
-apiVersion: v1
+apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
   name: ping-pong
 spec:
-  type: ClusterIP
-  selector:
-    app: ping-pong
-  ports:
-    - protocol: TCP
-      port: 8083
+  template:
+    spec:
+      containers:
+        - name: ping-pong
+          image: fallmx/ping-pong:4.1
+          ports:
+          - containerPort: 8083
+          readinessProbe:
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            httpGet:
+               path: /healthz
+               port: 8083
+          env:
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: ping-pong-postgres
+                key: username
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: ping-pong-postgres
+                key: password
+          - name: DB_HOST
+            value: ping-pong-postgres
+          - name: DB_PORT
+            value: "5432"

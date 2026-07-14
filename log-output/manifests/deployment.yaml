@@ -58,7 +58,7 @@ spec:
                 name: log-output-config
                 key: message
           - name: PINGS_API
-            value: http://ping-pong:8083/pings
+            value: http://ping-pong.exercises.svc.cluster.local/pings
           - name: GREETER_API
             value: http://greeter:8080
           - name: PORT

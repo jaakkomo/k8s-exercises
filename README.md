@@ -21,6 +21,14 @@ istioctl install \
   --set profile=ambient \
   --set values.global.platform=k3d \
   --set values.cni.cniBinDir=/var/lib/rancher/k3s/data/cni
+
+kubectl apply -f https://github.com/knative/serving/releases/download/knative-v1.22.1/serving-crds.yaml
+kubectl apply -f https://github.com/knative/serving/releases/download/knative-v1.22.1/serving-core.yaml
+kubectl apply -f https://github.com/knative-extensions/net-kourier/releases/download/knative-v1.22.1/kourier.yaml
+kubectl patch configmap/config-network \
+--namespace knative-serving \
+--type merge \
+--patch '{"data":{"ingress-class":"kourier.ingress.networking.knative.dev"}}'
 ```
 
 ## Chapter 2
@@ -89,3 +97,4 @@ istioctl install \
 - [5.3.](https://github.com/jaakkomo/k8s-exercises/tree/5.3)
 - [5.4.](https://github.com/jaakkomo/k8s-exercises/tree/5.4/wikipedia)
 - [5.6.](https://github.com/jaakkomo/k8s-exercises/tree/5.6/knative)
+- [5.7.](https://github.com/jaakkomo/k8s-exercises/tree/5.7/ping-pong)

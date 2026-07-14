@@ -53,12 +53,6 @@ func (app *App) Index(w http.ResponseWriter, req *http.Request) {
 }
 
 func (app *App) Health(w http.ResponseWriter, req *http.Request) {
-	res, err := http.Get(app.pingsApi)
-	if err != nil || res.StatusCode >= 400 {
-		w.WriteHeader(http.StatusServiceUnavailable)
-		return
-	}
-
 	w.WriteHeader(http.StatusOK)
 }
 
